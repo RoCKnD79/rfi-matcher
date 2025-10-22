@@ -1,0 +1,44 @@
+[build-system]
+# XXX: If your project needs other packages to build properly, add them to this list.
+requires = ["setuptools >= 64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rfi-matcher"
+version = "0.0.0"
+license = {file = "LICENSE"}
+readme = "README.md"
+
+authors = [
+  {name = "Roman Danylovych", email = "roman.danylovych@epfl.ch"},
+]
+maintainers = [
+  {name = "Roman Danylovych", email = "roman.danylovych@epfl.ch"}
+]
+description = "Radio Frequency Interference (RFI) matcher for publicly available observations."
+
+requires-python = ">=3.9"
+dependencies = [
+    "sopp", "scipy", "matplotlib", 
+    "astropy", "spacetrack", "skyfield", "numpy", 
+]
+
+[project.optional-dependencies]
+ipy = ["ipython", "ipykernel"]
+test = ["pytest"]
+docs = ["sphinx", "sphinx-rtd-theme"]
+
+[project.urls]
+Repository = "https://github.com/RoCKnD79/rfi-matcher.git"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+tabsim = ["data/**/*"]
+
+[project.scripts]
+# tle-region = "[directory]:main"
