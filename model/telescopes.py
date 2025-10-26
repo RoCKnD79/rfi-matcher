@@ -14,7 +14,8 @@ class Observatory():
                  declination="7d24m25.426s", 
                  right_ascension="5h55m10.3s",
                  min_freq = 0,
-                 max_freq = 0):
+                 max_freq = 0,
+                 data_archive = DataArchive()):
         '''
         Parameters
         ----------
@@ -38,6 +39,8 @@ class Observatory():
         self.declination = declination
         self.right_ascension = right_ascension
         self.freq_interval = Interval(min_freq, max_freq)
+
+        self.data_archive = data_archive
 
 
 HCRO = Observatory("HCRO", 3, 986, 40.8178049, -121.4695413, "7d24m25.426s", "5h55m10.3s", 500, 11000)
