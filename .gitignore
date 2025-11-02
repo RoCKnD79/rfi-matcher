@@ -1,3 +1,5 @@
 __pycache__/*
 tests/__pycache__/*
+model/__pycache__/*
+model/data_archive/__pycache__/*
 tokens.json

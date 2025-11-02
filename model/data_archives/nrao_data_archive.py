@@ -3,10 +3,16 @@ from .data_archive import DataArchive
 
 class NraoDataArchive(DataArchive):
 
-    def get_observations(self, start=0, num_rows=25):
+    def __init__(self):
+        self.name = "NRAO"
         START = 0
-        NUM_ROWS = 25
-        NRAO_PORTAL_URL = f"https://data.nrao.edu/archive-service/restapi_get_eb_project_view?start={START}&rows={NUM_ROWS}&sort=proj_stop%20desc"
+        NUM_ROWS = 5
+
+        self.start = START
+        self.num_rows = NUM_ROWS
+
+    def get_observations(self):
+        # NRAO_PORTAL_URL = f"https://data.nrao.edu/archive-service/restapi_get_eb_project_view?start={START}&rows={NUM_ROWS}&sort=proj_stop%20desc"
 
         # Read list of projects from NRAO data archive portal
         project_codes = self.get_project_codes()
@@ -36,8 +42,8 @@ class NraoDataArchive(DataArchive):
         return interest_obs
 
 
-    def get_project_codes(self, start=0, num_rows=25):
-        NRAO_PORTAL_URL = f"https://data.nrao.edu/archive-service/restapi_get_eb_project_view?start={start}&rows={num_rows}&sort=proj_stop%20desc"
+    def get_project_codes(self):
+        NRAO_PORTAL_URL = f"https://data.nrao.edu/archive-service/restapi_get_eb_project_view?start={self.start}&rows={self.num_rows}&sort=proj_stop%20desc"
         nrao_portal_data = self.get_html(NRAO_PORTAL_URL)
 
         # Extract list of project IDs
@@ -51,7 +57,7 @@ class NraoDataArchive(DataArchive):
 
 
     def get_url_project(self, project_code):
-        return f"https://data.nrao.edu/archive-service/restapi_get_paged_exec_blocks?start=0&rows=25&sort=obs_stop%20desc&project_code=%22{project_code}%22"
+        return f"https://data.nrao.edu/archive-service/restapi_get_paged_exec_blocks?start={self.start}&rows={self.num_rows}&sort=obs_stop%20desc&project_code=%22{project_code}%22"
 
 
     def get_url_observation(self, observation_id):
