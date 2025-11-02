@@ -1,5 +1,5 @@
-from model.filter_builder import RaFilter
-from model.archive_dictionary import *
+from src.filter_builder import RaFilter
+from src.data_archives.archive_dictionary import *
 
 
 def main():

@@ -46,7 +46,7 @@ def parse_filters(raw_filters: List[str]) -> List[Dict[str, Any]]:
         elif key == "radec":
             j_val = json.loads(val)
             filters.append({"field": key, "value": j_val})
-        elif key in ("NumFreqChannels", "Band", "QA2"):
+        elif key in ("NumFreqChannels", "Receiver", "QA2"):
             if isinstance(val, str):
                 values = [v.strip() for v in val.split(",") if v.strip()]
             elif isinstance(val, list):
@@ -175,7 +175,7 @@ def try_refresh(config):
             logger.info("✅ Token refreshed successfully.")
             return tokens
         else:
-            logger.info("⚠️ Refresh failed: %s", response.text)
+            logger.info("⚠️ Refresh failed:", response.text)
             return None
     except Exception as e:
         logger.info(f"⚠️ Refresh error: {e}")
@@ -246,8 +246,6 @@ from typing import List
 import enum
 import ssl
 
-product_type_help = "Product type when selecting observation sub-products (MeerKATReductionProduct or FITSImageProduct)"
-
 
 def build_ssl_context(no_check_certificate: bool) -> ssl.SSLContext:
     if no_check_certificate:
@@ -277,13 +275,7 @@ def unwrap_type(gql_type):
 
 
 def build_selection_block(
-    gql_type,
-    depth=0,
-    max_depth=2,
-    skip_fields=None,
-    fields=None,
-    url_format=None,
-    product_type=None,
+    gql_type, depth=0, max_depth=2, skip_fields=None, fields=None, url_format=None
 ):
     indent = "  " * (depth + 1)
     lines = []
@@ -299,9 +291,7 @@ def build_selection_block(
 
         unwrapped = unwrap_type(field.type)
         if isinstance(unwrapped, GraphQLScalarType) or depth >= max_depth:
-            if field_name == "FileSize":
-                lines.append(f"{indent}{field_name}")
-            elif field_name == "rdb":
+            if field_name == "rdb":
                 lines.append(
                     f"{indent}{field_name}(internal: {'false' if url_format == URLFormat.external.value else 'true'})"
                 )
@@ -315,25 +305,8 @@ def build_selection_block(
                 skip_fields,
                 fields={"*"},  # always include all nested subfields
                 url_format=url_format,
-                product_type=product_type,
             )
-            if field_name == "products":
-                if not product_type:
-                    print(
-                        (
-                            "Missing required product type for 'products' field.\n"
-                            "Either specify a type, for example:\n"
-                            "  --product-type='FITSImageProduct'\n"
-                            "or exclude this field entirely:\n"
-                            "  --exclude-fields='products,field2,field3,etc..'"
-                        )
-                    )
-                    sys.exit(1)
-                lines.append(
-                    f"{indent}{field_name}(type: {product_type}) {{\n{nested}\n{indent}}}"
-                )
-            else:
-                lines.append(f"{indent}{field_name} {{\n{nested}\n{indent}}}")
+            lines.append(f"{indent}{field_name} {{\n{nested}\n{indent}}}")
 
     return "\n".join(lines)
 
@@ -349,7 +322,6 @@ async def data(
     filters: List[str] = [],
     no_check_certificate: bool = False,
     sort: List[str] = [],
-    product_type: str = None,
 ):
     filters = filters or []
     sort = sort or []
@@ -391,7 +363,6 @@ async def data(
                         skip_fields={},
                         fields={"*"},
                         url_format=url_format,
-                        product_type=product_type,
                     )
                 )
                 return
@@ -402,11 +373,10 @@ async def data(
                 skip_fields=set([s.strip() for s in (exclude_fields or "").split(",")]),
                 fields=set([s.strip() for s in (fields or "*").split(",")]),
                 url_format=url_format,
-                product_type=product_type,
             )
 
             query_str = f"""
-                query ($limit: Int, $cursor: String, $search: String, $filters: [SolrFilterInput!], $sort: [SortColumnInput!]) {{
+                query ($limit: Int, $cursor: String, $search: String, $filters: [ProductFilterInput!], $sort: [SortColumnInput!]) {{
                     captureBlocks(limit: $limit, cursor: $cursor, search: $search, filters: $filters, sort: $sort) {{
                         pageInfo {{
                         totalCount
@@ -442,7 +412,7 @@ async def data(
                     page_info = result["captureBlocks"]["pageInfo"]
 
                     for record in records:
-                        sys.stdout.write(json.dumps(record) + "\n")
+                        sys.stdout.write(json.dumps(record) + "\n\n")
                     fetched += len(records)
 
                     if not page_info["hasNextPage"] or fetched >= limit:
@@ -498,13 +468,8 @@ def main():
     )
     parser.add_argument(
         "--fields",
-        default="*",
+        default="id,CaptureBlockId,Band,Bandwidth,CenterFrequency,MinFreq,MaxFreq,Duration,Public,DecRa,rdb",
         help="Comma-separated list of fields to include",
-    )
-    parser.add_argument(
-        "--product-type",
-        default=None,
-        help=product_type_help,
     )
     parser.add_argument(
         "--exclude-fields",
@@ -514,7 +479,7 @@ def main():
     parser.add_argument(
         "--limit",
         type=int,
-        default=1000,
+        default=10,
         help="Limit results to N records (default: 1000)",
     )
     parser.add_argument(
@@ -560,7 +525,6 @@ def main():
             filters=args.filter,
             no_check_certificate=args.no_check_certificate,
             sort=args.sort,
-            product_type=args.product_type,
         )
     )
 

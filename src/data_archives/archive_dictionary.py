@@ -1,5 +1,5 @@
 import numpy as np
-from model.data_archives import *
+from src.data_archives import *
 
 
 ARCHIVE_CLASSES = {
