@@ -1,9 +1,13 @@
-from model.filter_builder import RaFilter
-from model.archive_dictionary import *
+import pandas as pd
+from pathlib import Path
+import matplotlib.pyplot as plt
 import katdal
 
+from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
+
+from model.filter_builder import RaFilter
+from model.archive_dictionary import *
 from model.utils import get_rfi_sources
-import pandas as pd
 
 def main():
     ra_filter = (
@@ -32,7 +36,7 @@ def main():
 
         # Fetch the desired observations
         obs_df = archive.get_observations()
-        print(obs_df)
+        # print(obs_df)
         print(f"Processing {archive.name} with {archive.__class__.__name__}")
 
         observations.append(obs_df)
@@ -40,15 +44,42 @@ def main():
         # Delete the data archive object to free memory
         del archive
 
-    full_df = pd.concat(observations, ignore_index=True)
-    print(full_df)
+    total_obs = pd.concat(observations, ignore_index=True)
+    print(total_obs)
 
-    rfi_satellites = []
-    for _, obs in full_df.iterrows():
-        rfi_satellites.append(get_rfi_sources(obs))
+    total_obs["NORAD"] = None
 
-    print(rfi_satellites)
+    for i, obs in total_obs.iterrows():
+        print('\nprocessing row', i)
+        rfi = get_rfi_sources(obs)
+        total_obs.at[i, "NORAD"] = rfi
+
+    print(total_obs)
+
+
+    # ---- KATDAL TEST ----
+    # print(total_obs.iloc[0]["url"])
+    # d = katdal.open(total_obs.iloc[0]["url"])
+    # d.select(scans='track', channels=slice(200, 300), ants='m000')
+    # print(d)
+
+    # plt.plot(d.az, d.el, 'o')
+    # plt.xlabel('Azimuth (degrees)')
+    # plt.ylabel('Elevation (degrees)')
+    # plt.show()
 
 
 if __name__ == "__main__":
-    main()
+
+    satellites_filepath = Path('/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellites.tle')
+    if not satellites_filepath.exists():
+        print("Fetching satellite TLEs:", satellites_filepath)
+        TleFetcherCelestrak(satellites_filepath).fetch_tles()
+
+    try:
+        main()
+    finally:
+        satellites_filepath.unlink(missing_ok=True)
+
+    # main()
+        

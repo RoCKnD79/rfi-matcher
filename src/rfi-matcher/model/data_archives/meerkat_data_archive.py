@@ -19,13 +19,11 @@ class MeerkatDataArchive(DataArchive):
 
     def get_observations(self, num=1):
         observations = self.get_raw_observations(num)
-
-        observations = pd.DataFrame(observations)
         final_obs = self.format_to_sopp(observations)
         return final_obs
     
 
-    def get_raw_observations(self, num=1) -> list[str]:
+    def get_raw_observations(self, num=1, fields="rdb,MinFreq,MaxFreq,Bandwidth,Targets,DecRa,ProductReceivedTime,Duration") -> pd.DataFrame:
         flt = self.ra_filter
 
         # Get bands corresponding to frequencies of interest
@@ -50,7 +48,7 @@ class MeerkatDataArchive(DataArchive):
         observations = asyncio.run(
             meerkat_api.data(
                 auth_address="https://archive.sarao.ac.za",
-                fields="rdb,MinFreq,MaxFreq,Bandwidth,Targets,DecRa,ProductReceivedTime,Duration",
+                fields=fields,
                 exclude_fields="products,FileSize",
                 search="*",
                 limit=num,
@@ -63,7 +61,7 @@ class MeerkatDataArchive(DataArchive):
             )
         )
 
-        return observations
+        return pd.DataFrame(observations)
 
 
     def format_to_sopp(self, df):
@@ -83,14 +81,14 @@ class MeerkatDataArchive(DataArchive):
         expanded_df["declination"] = Angle(expanded_df["declination"].values * u.deg).to_string(unit=u.deg, sep='dms', precision=3)
         expanded_df["right_ascension"] = Angle(expanded_df["right_ascension"].values * u.deg).to_string(unit=u.hour, sep='hms', precision=1)
 
-        # Rename "Bandwidth" to conform with format
-        expanded_df = expanded_df.rename(columns={"Bandwidth": "bandwidth"})
+        # Rename "Bandwidth" and "rdb" to conform with sopp config format
+        expanded_df = expanded_df.rename(columns={"Bandwidth": "bandwidth", "rdb": "url"})
 
         # convert MinFreq, MaxFreq columns into a center frequency property
         expanded_df['frequency'] = (expanded_df['MinFreq'] + expanded_df['MaxFreq']) / 2
         expanded_df = expanded_df.drop(columns=['MinFreq', 'MaxFreq'])
 
-        expanded_df = expanded_df.drop(columns=['Targets', 'rdb'])
+        expanded_df = expanded_df.drop(columns=['Targets'])
 
         # add name in first column
         expanded_df["name"] = [self.name]*len(expanded_df)

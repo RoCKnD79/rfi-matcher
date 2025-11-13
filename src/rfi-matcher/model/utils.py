@@ -1,12 +1,13 @@
 import pandas as pd
+from pathlib import Path
 
 from sopp.sopp import Sopp
 from sopp.builder.configuration_builder import ConfigurationBuilder
+from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
 
 def get_rfi_sources(df_obs: pd.DataFrame):
 
     name = "MEERKAT"
-    print(df_obs['bandwidth'])
 
     configuration = (
         ConfigurationBuilder()
@@ -22,8 +23,8 @@ def get_rfi_sources(df_obs: pd.DataFrame):
             frequency=df_obs['frequency']
         )
         .set_time_window(
-            begin=df_obs['begin'],
-            end=df_obs['end']
+            begin='2025-11-13T08:48:54.0',#df_obs['begin'],
+            end='2025-11-13T08:49:54.0' #df_obs['end']
         )
         .set_observation_target(
             declination=df_obs["declination"],
@@ -36,16 +37,20 @@ def get_rfi_sources(df_obs: pd.DataFrame):
         )
         # Alternatively set all of the above settings from a config file
         #.set_from_config_file(config_file='./supplements/config.json')
-        .set_satellites(tle_file='../../data/satellites.tle', frequency_file='../../data/satellite_frequencies.csv')
+        .set_satellites(tle_file='/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellites.tle', frequency_file='/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellite_frequencies.csv')
         .build()
     )
 
-    sopp_obj = Sopp(configuration=configuration)
+    sopp_obj = Sopp(configuration)
+    rfi_overhead = sopp_obj.get_satellites_crossing_main_beam()
 
-    rfi_satellites = sopp_obj.get_satellites_crossing_main_beam()
+    rfi_satellites = []
+    for sat in rfi_overhead:
+        rfi_satellites.append(sat.satellite.name)
+
     return rfi_satellites
 
 
 
 def get_sopp_order():
-    return ["name", "frequency", "bandwidth", "declination", "right_ascension", "begin", "end"]
+    return ["name", "frequency", "bandwidth", "declination", "right_ascension", "begin", "end", "url"]
