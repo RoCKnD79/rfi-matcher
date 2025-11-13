@@ -1,7 +1,7 @@
 __pycache__/*
 tests/__pycache__/*
-model/__pycache__/*
-model/data_archive/__pycache__/*
+src/rfi-matcher/model/__pycache__/*
+src/rfi-matcher/model/data_archive/__pycache__/*
 
 tokens.json
 
