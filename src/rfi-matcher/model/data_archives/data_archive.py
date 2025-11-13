@@ -2,18 +2,19 @@ from abc import ABC, abstractmethod
 
 from urllib.request import urlopen
 import json
+import pandas as pd
 
 from ..filter_builder import RaFilter
 
 class DataArchive(ABC):
 
-    @abstractmethod
     def __init__(self, ra_filter: RaFilter):
-        pass
+        self.ra_filter = ra_filter
 
     @abstractmethod
-    def get_observations(self):
+    def get_observations(self, num: int) -> pd.DataFrame:
         pass 
+
 
 
     def get_html(self, url):

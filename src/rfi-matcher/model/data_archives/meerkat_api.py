@@ -10,6 +10,8 @@ from typing import List, Dict, Any
 import json
 import re
 
+import pandas as pd
+
 
 def parse_filters(raw_filters: List[str]) -> List[Dict[str, Any]]:
     filters = []
@@ -429,6 +431,7 @@ async def data(
 
             try:
                 fetched = 0
+                observations = []
                 while True:
                     variables = {
                         "limit": min(pageSize, (limit - fetched)),
@@ -442,11 +445,15 @@ async def data(
                     page_info = result["captureBlocks"]["pageInfo"]
 
                     for record in records:
-                        sys.stdout.write(json.dumps(record) + "\n")
+                        # print(type(record))
+                        # print(record)
+                        observations.append(record)
+                        #sys.stdout.write(json.dumps(record) + "\n")
                     fetched += len(records)
 
                     if not page_info["hasNextPage"] or fetched >= limit:
-                        break
+                        return observations
+                        #break
 
                     cursor = page_info["endCursor"]
 

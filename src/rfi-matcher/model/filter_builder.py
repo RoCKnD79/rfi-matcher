@@ -14,6 +14,8 @@ class RaFilter:
         self.endTimeUTC = "2025-07-15T08:49:54.0"
         self.observatories = []
 
+        self.filtered_df = None
+
         try:
             self.ra_csv_df = pd.read_csv("../../data/ITU_RA_Observatories.csv")
 
@@ -109,8 +111,8 @@ class RaFilter:
         if self.observatories:
             print(self.observatories)
             #df[df["stn_name"].apply(lambda x: x == "PUBLIC")]
-            filtered_df = df[df['stn_name'].isin(self.observatories)]
-            return filtered_df
+            self.filtered_df = df[df['stn_name'].isin(self.observatories)]
+            return self.filtered_df
 
         #print(df)
 
@@ -133,16 +135,23 @@ class RaFilter:
         )
 
         # Combine filters
-        filtered_df = df[location_filter & frequency_filter]
+        self.filtered_df = df[location_filter & frequency_filter]
 
-        return filtered_df
+        return self.filtered_df
 
 
 
     def get_observatories(self):
         # extract the names of observatories meeting the filter parameters
-        filtered_df = self.filter_observatories()
-        return filtered_df['stn_name'].dropna().drop_duplicates().tolist()
+        if self.filtered_df == None:
+            self.filter_observatories()
+
+        return self.filtered_df['stn_name'].dropna().drop_duplicates().tolist()
+
+
+    def get_observatory_info(self, name):
+        df = self.filtered_df
+        return df[df['name'] == name]
 
 
     # ---------- INTERNAL VALIDATION ----------
