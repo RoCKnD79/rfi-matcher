@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import katdal
 
 from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
+from sopp.tle_fetcher.tle_fetcher_spacetrack import TleFetcherSpacetrack
 
 from model.filter_builder import RaFilter
 from model.archive_dictionary import *
@@ -13,11 +14,13 @@ def main():
     ra_filter = (
         RaFilter()
             .set_observatories(['MEERKAT'])
-            .set_frequencies([500, 1100])
+            # .set_frequencies([500, 1100])
             # .set_observatories(['VERY LARGE ARRAY NM', 'PARKES NSW', 'MEERKAT'])
             # .set_latitude([-40, 40])
             # .set_longitude([100, 110])
             # .set_frequencies([241000, 275000])
+            # .set_start_time("2025-04-15T08:49:54.0")
+            # .set_end_time("2025-07-02T10:32:48.0")
     )
 
     observatories = ra_filter.get_observatories()
@@ -26,6 +29,7 @@ def main():
     # Iterate over filtered observatories
     observations = []
     for name in observatories:
+        # Fetch the observatory's respective data archive class (given it exists)
         cls = ARCHIVE_CLASSES.get(name)
         if cls is None:
             print(f"Warning: No class defined for {name}")
@@ -33,12 +37,10 @@ def main():
 
         # Instantiate the corresponding data archive object
         archive = cls(ra_filter)
+        print(f"Processing {archive.name} with {archive.__class__.__name__}")
 
         # Fetch the desired observations
         obs_df = archive.get_observations()
-        # print(obs_df)
-        print(f"Processing {archive.name} with {archive.__class__.__name__}")
-
         observations.append(obs_df)
 
         # Delete the data archive object to free memory
@@ -50,9 +52,12 @@ def main():
     total_obs["NORAD"] = None
 
     for i, obs in total_obs.iterrows():
+        if(i > 0): break
         print('\nprocessing row', i)
         rfi = get_rfi_sources(obs)
         total_obs.at[i, "NORAD"] = rfi
+
+        print(rfi)
 
     print(total_obs)
 
@@ -75,6 +80,7 @@ if __name__ == "__main__":
     if not satellites_filepath.exists():
         print("Fetching satellite TLEs:", satellites_filepath)
         TleFetcherCelestrak(satellites_filepath).fetch_tles()
+        # TleFetcherSpacetrack(satellites_filepath).fetch_tles()
 
     try:
         main()

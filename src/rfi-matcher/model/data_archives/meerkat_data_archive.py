@@ -107,4 +107,4 @@ class MeerkatDataArchive(DataArchive):
         # (4) Drop Duration column (optional)
         expanded_df = expanded_df.drop(columns=["Duration"])
 
-        return expanded_df[utils.get_sopp_order()]
+        return expanded_df[utils.get_df_order()]

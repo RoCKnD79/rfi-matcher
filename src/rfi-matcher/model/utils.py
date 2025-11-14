@@ -46,11 +46,11 @@ def get_rfi_sources(df_obs: pd.DataFrame):
 
     rfi_satellites = []
     for sat in rfi_overhead:
-        rfi_satellites.append(sat.satellite.name)
+        rfi_satellites.append([sat.satellite.name, sat.satellite.tle_information.satellite_number])
 
     return rfi_satellites
 
 
 
-def get_sopp_order():
+def get_df_order():
     return ["name", "frequency", "bandwidth", "declination", "right_ascension", "begin", "end", "url"]
