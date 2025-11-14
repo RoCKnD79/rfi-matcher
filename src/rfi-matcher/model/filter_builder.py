@@ -6,15 +6,6 @@ from datetime import datetime, timezone
 class RaFilter:
 
     def __init__(self):
-        # self.area = np.array([[-90, 90], [-180, 180]])  # [[lat_min, lat_max], [lon_min, lon_max]]
-        self.lat_range = np.array([-90, 90])
-        self.lon_range = np.array([-180, 180])
-        self.freq_range = np.array([10, 1e6])  # MHz
-        self.startTimeUTC = "2024-04-15T08:48:54.0"
-        self.endTimeUTC = "2025-07-15T08:49:54.0"
-        self.observatories = []
-
-        self.filtered_df = None
 
         try:
             self.ra_csv_df = pd.read_csv("../../data/ITU_RA_Observatories.csv")
@@ -26,6 +17,17 @@ class RaFilter:
             self.ra_csv_df = self.ra_csv_df.map(lambda x: x.strip() if isinstance(x, str) else x)
         except Exception as e: 
             return print("Error loading csv:", e)
+        
+        # Default filter settings
+        self.lat_range = np.array([-90, 90])
+        self.lon_range = np.array([-180, 180])
+        self.freq_range = np.array([10, 1e6])  # MHz
+        self.startTimeUTC = "2024-04-15T08:48:54.0"
+        self.endTimeUTC = "2025-07-15T08:49:54.0"
+        self.observatories = []
+
+        # result after 
+        self.filtered_df = None
 
 
     def set_observatories(self, names):
@@ -107,14 +109,11 @@ class RaFilter:
 
         df = self.ra_csv_df
 
-        # check that 
+        # If specific observatories have been selected => return them
         if self.observatories:
-            print(self.observatories)
             #df[df["stn_name"].apply(lambda x: x == "PUBLIC")]
             self.filtered_df = df[df['stn_name'].isin(self.observatories)]
             return self.filtered_df
-
-        #print(df)
 
         lat_min, lat_max = self.lat_range
         lon_min, lon_max = self.lon_range

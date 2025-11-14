@@ -1,54 +1,110 @@
-import pandas as pd
-from pathlib import Path
+from datetime import datetime
+import pytz
+import numpy as np
+from skyfield.api import load
+from skyfield.units import Angle
 
-from sopp.sopp import Sopp
-from sopp.builder.configuration_builder import ConfigurationBuilder
-from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
+def iso_to_datetime(iso_string: str):
+    return datetime.fromisoformat(iso_string).replace(tzinfo=pytz.UTC)
 
-def get_rfi_sources(df_obs: pd.DataFrame):
+def linspace_sky_times(start_iso: str, end_iso: str, npoints=10):
+    """
+    Convert ISO start/end time into n Skyfield Time objects,
+    evenly spaced between the interval.
+    """
+    ts = load.timescale()
 
-    name = "MEERKAT"
+    dt_start = iso_to_datetime(start_iso)
+    dt_end   = iso_to_datetime(end_iso)
 
-    configuration = (
-        ConfigurationBuilder()
-        .set_facility(
-            latitude=-30.7128,
-            longitude=21.4436,
-            elevation=1086.6,
-            name=name,
-            beamwidth=3,
-        )
-        .set_frequency_range(
-            bandwidth=df_obs['bandwidth'],
-            frequency=df_obs['frequency']
-        )
-        .set_time_window(
-            begin='2025-11-13T08:48:54.0',#df_obs['begin'],
-            end='2025-11-13T08:49:54.0' #df_obs['end']
-        )
-        .set_observation_target(
-            declination=df_obs["declination"],
-            right_ascension=df_obs["right_ascension"]
-        )
-        .set_runtime_settings(
-            concurrency_level=8,
-            time_continuity_resolution=1,
-            min_altitude=5.0,
-        )
-        # Alternatively set all of the above settings from a config file
-        #.set_from_config_file(config_file='./supplements/config.json')
-        .set_satellites(tle_file='/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellites.tle', frequency_file='/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellite_frequencies.csv')
-        .build()
-    )
+    # Generate list of evenly spaced datetimes
+    times = [dt_start + i * (dt_end - dt_start) / (npoints - 1) for i in range(npoints)]
+    print(times)
+    sky_times = ts.from_datetimes(times)
 
-    sopp_obj = Sopp(configuration)
-    rfi_overhead = sopp_obj.get_satellites_crossing_main_beam()
+    return sky_times
+ 
 
-    rfi_satellites = []
-    for sat in rfi_overhead:
-        rfi_satellites.append([sat.satellite.name, sat.satellite.tle_information.satellite_number])
+def ra_str_to_deg(ra_str):
+    """
+    Convert RA string in format '[-]HhMmSs' to decimal degrees.
+    Example: '-4h20m35.0s' -> -65.1458333 degrees
+    """
+    ra_str = ra_str.strip()
+    sign = -1 if ra_str.startswith('-') else 1
+    ra_str = ra_str.lstrip('+-')
 
-    return rfi_satellites
+    # Split components
+    h_part, rest = ra_str.split('h')
+    m_part, s_part = rest.split('m')
+    s_part = s_part.rstrip('s')
+
+    hours = float(h_part)
+    minutes = float(m_part)
+    seconds = float(s_part)
+
+    # Convert to degrees: 1h = 15 deg
+    degrees = 15 * (hours + minutes/60 + seconds/3600)
+
+    return sign * degrees
+
+
+def dec_str_to_deg(dec_str):
+    """
+    Convert Dec string in format '[-]DdMmSs' to decimal degrees.
+    Example: '-63d42m45.601s' -> -63.712667 degrees
+    """
+    dec_str = dec_str.strip()
+    sign = -1 if dec_str.startswith('-') else 1
+    dec_str = dec_str.lstrip('+-')
+
+    # Split components
+    d_part, rest = dec_str.split('d')
+    m_part, s_part = rest.split('m')
+    s_part = s_part.rstrip('s')
+
+    degrees = float(d_part)
+    minutes = float(m_part)
+    seconds = float(s_part)
+
+    dec_deg = degrees + minutes/60 + seconds/3600
+    return sign * dec_deg
+
+
+
+def radec_to_vector(ra_deg, dec_deg):
+    """Convert RA/Dec in degrees to 3D unit vector."""
+    ra_rad = np.radians(ra_deg)
+    dec_rad = np.radians(dec_deg)
+    x = np.cos(dec_rad) * np.cos(ra_rad)
+    y = np.cos(dec_rad) * np.sin(ra_rad)
+    z = np.sin(dec_rad)
+    return np.array([x, y, z]).T  # shape (N,3) if ra/dec are arrays
+
+
+def closest_radec(ra_array, dec_array, target_ra_deg, target_dec_deg):
+    """
+    Find the RA/Dec in the arrays closest to the target point.
+    
+    Parameters:
+        ra_array, dec_array: arrays of RA/Dec in degrees
+        target_ra_deg, target_dec_deg: target RA/Dec in degrees
+    Returns:
+        idx: index of closest point
+        closest_ra, closest_dec: RA/Dec of closest point
+        angular_distance_deg: angular distance in degrees
+    """
+    sat_vec = radec_to_vector(ra_array, dec_array)
+    target_vec = radec_to_vector(target_ra_deg, target_dec_deg).reshape(1,3)
+
+    # Cosine of angular separation
+    cos_theta = np.sum(sat_vec * target_vec, axis=1)
+    cos_theta = np.clip(cos_theta, -1.0, 1.0)  # numerical safety
+    angular_distance_deg = np.degrees(np.arccos(cos_theta))
+
+    # Index of closest approach
+    idx = np.argmin(angular_distance_deg)
+    return idx, ra_array[idx], dec_array[idx], angular_distance_deg[idx]
 
 
 
