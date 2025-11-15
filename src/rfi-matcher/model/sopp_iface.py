@@ -6,7 +6,7 @@ from sopp.custom_dataclasses.satellite.satellite import Satellite
 from sopp.builder.configuration_builder import ConfigurationBuilder
 from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
 
-def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=1) -> list[Satellite]:
+def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
     '''
     scope = 0 (satellites crossing mainbeam)
     scope = 1 (all satellites above horizon)
@@ -28,8 +28,8 @@ def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=1) -> list[Satellite]:
             frequency=df_obs['frequency']
         )
         .set_time_window(
-            begin='2025-11-13T08:48:54.0',#df_obs['begin'],
-            end='2025-11-13T08:49:54.0' #df_obs['end']
+            begin='2025-11-15T08:49:54.0',#df_obs['begin'],
+            end='2025-11-15T08:59:54.0' #df_obs['end']
         )
         .set_observation_target(
             declination=df_obs["declination"],
@@ -58,3 +58,16 @@ def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=1) -> list[Satellite]:
         rfi_satellites.append(sat.satellite)
 
     return rfi_satellites
+
+
+
+def extend_with_rfi(observations: pd.DataFrame):
+    total_obs = observations.copy()
+    total_obs["NORAD"] = None
+
+    for i, obs in total_obs.iterrows():
+        print('\nprocessing row', i)
+        rfi = get_rfi_sources(obs)
+        total_obs.at[i, "NORAD"] = rfi
+
+    return total_obs

@@ -11,7 +11,7 @@ from sopp.tle_fetcher.tle_fetcher_spacetrack import TleFetcherSpacetrack
 
 from model.filter_builder import RaFilter
 from model.archive_dictionary import *
-from model.sopp_iface import get_rfi_sources
+from model.sopp_iface import get_rfi_sources, extend_with_rfi
 from model import utils
 
 def main(fetch_tles=True, satellites_filepath=Path('')):
@@ -58,59 +58,59 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
         del archive
 
     total_obs = pd.concat(observations, ignore_index=True)
-    print(total_obs)
+    print("Collected observations:", total_obs)
+
+    # total_obs = extend_with_rfi(total_obs)
+    # print("Observations with corresponding satellite RFI sources:\n", total_obs)
 
     total_obs["NORAD"] = None
-
     for i, obs in total_obs.iterrows():
-        if(i > 0): break
+        if(i > 2): break
         print('\nprocessing row', i)
         rfi = get_rfi_sources(obs)
         total_obs.at[i, "NORAD"] = rfi
 
-    eo = rfi[0].to_rhodesmill()
+    print("Observations with corresponding satellite RFI sources:\n", total_obs)
+
+
+    # For each observation's potential satellite RFI 
+    # => find the position and timestamp where satellite is closest to observation target
+    for i, obs in total_obs.iterrows():
+
+        obs_start = "2025-11-15T08:49:54.0" #obs["begin"]
+        obs_end = "2025-11-15T08:59:54.0" #obs["end"]
+        print('\nObservation begin:', obs_start)
+        print('Observation end:', obs_end)
+
+        target_ra = utils.ra_str_to_deg(obs["right_ascension"])
+        target_dec = utils.dec_str_to_deg(obs["declination"])
+
+        # print("\n=====================")
+        # print('\nTarget RA:', target_ra)
+        # print('Target DEC:', target_dec)
+
+        for sat in obs["NORAD"]:
+
+            print("\n=====================")
+            print('\nTarget RA:', target_ra)
+            print('Target DEC:', target_dec)
+
+            eo = sat.to_rhodesmill()
     
-    sat_timestamps = utils.linspace_sky_times('2025-11-13T08:48:54.0', '2025-11-13T08:49:54.0')
-    geocentric = eo.at(sat_timestamps)
-    km = geocentric.position.km
-    right_ascensions, declinations, distances = geocentric.radec()
+            sat_timestamps = utils.linspace_sky_times(obs_start, obs_end, npoints=20)
+            geocentric = eo.at(sat_timestamps)
+            right_ascensions, declinations, _ = geocentric.radec()
 
-    print("\nSAT RAs:", right_ascensions.degrees)
-    print("SAT DECs:", declinations.degrees)
+            print("\nSAT RAs:", right_ascensions.degrees)
+            print("SAT DECs:", declinations.degrees)
 
-    target_ra = utils.ra_str_to_deg('-4h20m35.0s')
-    target_dec = utils.dec_str_to_deg('-63d42m45.601s')
-
-    print('\nTarget RA:', target_ra)
-    print('Target DEC:', target_dec)
-
-    idx, ra, dec, ang_dist = utils.closest_radec(right_ascensions.degrees, declinations.degrees, target_ra, target_dec)
-    print('\nidx:', idx)
-    print('ra:', ra)
-    print('dec:', dec)
-    print('ang_dist:', ang_dist)
-
-    # name = "CALSPHERE 1"     
-    # line1 = "1 00900U 64063C   25318.27805289  .00001492  00000+0  15168-2 0  9996"
-    # line2 = "2 00900  90.2209  66.7944 0025285 219.0423 169.4006 13.76311253 41869"
-
-    # eo = EarthSatellite(line1, line2, name)
-
-    # ts = eo.epoch
-    # dt = ts.utc_datetime()
-
-    # sat_timestamps = utils.linspace_sky_times("2025-11-14T08:49:54.0", "2025-11-14T08:59:54.0")
-    # print(sat_timestamps)
-
-    # geocentric = eo.at(sat_timestamps)
-    # km = geocentric.position.km
-    # right_ascensions, declinations, distances = geocentric.radec()
-    
-    # for ra in right_ascensions.hours:
-    #     print(ra)
-
-    # for dec in declinations.degrees:
-    #     print(dec)
+            idx, ra, dec, ang_dist = utils.closest_radec(right_ascensions.degrees, declinations.degrees, target_ra, target_dec)
+            print(f"\n{sat.name} closest:")
+            print('idx:', idx)
+            print('timestamp:', sat_timestamps[idx].utc_datetime())
+            print('ra:', ra)
+            print('dec:', dec)
+            print('ang_dist:', ang_dist)
 
 
     # ---- KATDAL TEST ----

@@ -39,7 +39,6 @@ class MeerkatDataArchive(DataArchive):
         end_date = dt_end.date()
 
         filters = [f"Band={bands}", f"from={start_date}", f"to={end_date}"]
-        print(filters)
 
 
         # TODO understand why if fields="*" => product_type can't be None
@@ -61,6 +60,8 @@ class MeerkatDataArchive(DataArchive):
             )
         )
 
+        print(observations)
+
         return pd.DataFrame(observations)
 
 
@@ -79,7 +80,10 @@ class MeerkatDataArchive(DataArchive):
 
         # Convert the declination column from degrees to dms string format
         expanded_df["declination"] = Angle(expanded_df["declination"].values * u.deg).to_string(unit=u.deg, sep='dms', precision=3)
-        expanded_df["right_ascension"] = Angle(expanded_df["right_ascension"].values * u.deg).to_string(unit=u.hour, sep='hms', precision=1)
+        
+        # MeerKAT archive may return negative RAs => convert to positive degrees (between 0 and 360)
+        right_ascensions = (expanded_df["right_ascension"].values + 360) % 360
+        expanded_df["right_ascension"] = Angle(right_ascensions * u.deg).to_string(unit=u.hour, sep='hms', precision=1)
 
         # Rename "Bandwidth" and "rdb" to conform with sopp config format
         expanded_df = expanded_df.rename(columns={"Bandwidth": "bandwidth", "rdb": "url"})

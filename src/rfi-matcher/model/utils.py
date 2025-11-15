@@ -19,7 +19,6 @@ def linspace_sky_times(start_iso: str, end_iso: str, npoints=10):
 
     # Generate list of evenly spaced datetimes
     times = [dt_start + i * (dt_end - dt_start) / (npoints - 1) for i in range(npoints)]
-    print(times)
     sky_times = ts.from_datetimes(times)
 
     return sky_times
