@@ -4,6 +4,10 @@ import numpy as np
 from skyfield.api import load
 from skyfield.units import Angle
 
+def iso_extract_date(timestamp: str) -> str:
+    dt = datetime.fromisoformat(timestamp)
+    return dt.date().isoformat()
+
 def iso_to_datetime(iso_string: str):
     return datetime.fromisoformat(iso_string).replace(tzinfo=pytz.UTC)
 

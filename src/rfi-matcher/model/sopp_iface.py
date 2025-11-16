@@ -28,8 +28,8 @@ def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
             frequency=df_obs['frequency']
         )
         .set_time_window(
-            begin='2025-11-15T08:49:54.0',#df_obs['begin'],
-            end='2025-11-15T08:59:54.0' #df_obs['end']
+            begin=df_obs['begin'],
+            end=df_obs['end']
         )
         .set_observation_target(
             declination=df_obs["declination"],
@@ -59,6 +59,13 @@ def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
 
     return rfi_satellites
 
+
+def get_rfi_names(satellites: list[Satellite]) -> list[str]:
+    names = []
+    for sat in satellites:
+        names.append(sat.name)
+    
+    return names
 
 
 def extend_with_rfi(observations: pd.DataFrame):

@@ -22,7 +22,7 @@ class RaFilter:
         self.lat_range = np.array([-90, 90])
         self.lon_range = np.array([-180, 180])
         self.freq_range = np.array([10, 1e6])  # MHz
-        self.startTimeUTC = "2024-04-15T08:48:54.0"
+        self.startTimeUTC = "2025-05-01T08:48:54.0"
         self.endTimeUTC = "2025-07-15T08:49:54.0"
         self.observatories = []
 
