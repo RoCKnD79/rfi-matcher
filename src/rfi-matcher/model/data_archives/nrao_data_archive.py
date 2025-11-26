@@ -2,9 +2,11 @@ import pandas as pd
 from .data_archive import DataArchive
 
 class NraoDataArchive(DataArchive):
+    name = "NRAO"
+    latitude = 34.083
+    longitude = -107.617
 
     def __init__(self):
-        self.name = "NRAO"
         START = 0
         NUM_ROWS = 5
 

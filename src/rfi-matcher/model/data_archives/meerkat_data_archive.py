@@ -13,9 +13,13 @@ from ..filter_builder import RaFilter
 
 class MeerkatDataArchive(DataArchive):
 
+    name = "MEERKAT"
+    latitude = -30.7128
+    longitude = 21.4436
+
     def __init__(self, ra_filter: RaFilter):
-        self.name = "MeerKAT"
         self.ra_filter = ra_filter
+        
 
     def get_observations(self, num=1):
         observations = self.get_raw_observations(num)

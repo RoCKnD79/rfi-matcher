@@ -7,9 +7,17 @@ import pandas as pd
 from ..filter_builder import RaFilter
 
 class DataArchive(ABC):
+    required_attributes = ["name", "latitude", "longitude"]
 
-    def __init__(self, ra_filter: RaFilter):
-        self.ra_filter = ra_filter
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+
+        # Enforce required class-level attributes
+        for attr in cls.required_attributes:
+            if not hasattr(cls, attr):
+                raise TypeError(
+                    f"Subclass '{cls.__name__}' must define attribute '{attr}'"
+                )
 
     @abstractmethod
     def get_observations(self, num: int) -> pd.DataFrame:

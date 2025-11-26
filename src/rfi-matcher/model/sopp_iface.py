@@ -19,7 +19,7 @@ def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
         .set_facility(
             latitude=-30.7128,
             longitude=21.4436,
-            elevation=1086.6,
+            elevation=0,
             name=name,
             beamwidth=3,
         )

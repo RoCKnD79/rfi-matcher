@@ -72,12 +72,12 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
 
     total_obs["NORAD"] = None
     for i, obs in total_obs.iterrows():
-        # if(i > 2): break
-        print('\nprocessing row', i)
-        rfi = sopp_iface.get_rfi_sources(obs)
-        # print(rfi)
-        print(sopp_iface.get_rfi_names(rfi))
-        total_obs.at[i, "NORAD"] = rfi
+        if(i == 1): 
+            print('\nprocessing row', i)
+            rfi = sopp_iface.get_rfi_sources(obs)
+            # print(rfi)
+            print(sopp_iface.get_rfi_names(rfi))
+            total_obs.at[i, "NORAD"] = rfi
 
     print("Observations with corresponding satellite RFI sources:\n", total_obs)
 
@@ -106,7 +106,7 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
 
                 eo = sat.to_rhodesmill()
         
-                sat_timestamps = utils.linspace_sky_times(obs_start, obs_end, npoints=20)
+                sat_timestamps = utils.linspace_sky_times(obs_start, obs_end, npoints=1000)
                 geocentric = eo.at(sat_timestamps)
                 right_ascensions, declinations, _ = geocentric.radec()
 
