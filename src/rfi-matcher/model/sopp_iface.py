@@ -6,20 +6,26 @@ from sopp.custom_dataclasses.satellite.satellite import Satellite
 from sopp.builder.configuration_builder import ConfigurationBuilder
 from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
 
+from model.archive_dictionary import *
+
 def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
     '''
     scope = 0 (satellites crossing mainbeam)
     scope = 1 (all satellites above horizon)
     '''
 
-    name = "MEERKAT"
+    name = df_obs['name']
+    archive = ARCHIVE_CLASSES.get(name)
+    lat = archive.latitude
+    lon = archive.longitude
+    el = archive.elevation
 
     configuration = (
         ConfigurationBuilder()
         .set_facility(
-            latitude=-30.7128,
-            longitude=21.4436,
-            elevation=0,
+            latitude=lat,
+            longitude=lon,
+            elevation=el,
             name=name,
             beamwidth=3,
         )
@@ -68,13 +74,21 @@ def get_rfi_names(satellites: list[Satellite]) -> list[str]:
     return names
 
 
-def extend_with_rfi(observations: pd.DataFrame):
+def extend_with_rfi(observations: pd.DataFrame, log=False):
     total_obs = observations.copy()
     total_obs["NORAD"] = None
 
     for i, obs in total_obs.iterrows():
-        print('\nprocessing row', i)
+        if(i > 1): break
+
+        if log:
+            begin = obs['begin']
+            end = obs['end']
+            print(f"\nprocessing row: {i} | begin: {begin}, end: {end}")
+        
         rfi = get_rfi_sources(obs)
         total_obs.at[i, "NORAD"] = rfi
+
+        print(get_rfi_names(rfi))
 
     return total_obs

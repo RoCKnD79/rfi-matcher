@@ -5,6 +5,8 @@ import math
 from skyfield.api import load
 from skyfield.units import Angle
 
+from sopp.custom_dataclasses.satellite.satellite import Satellite
+
 def iso_extract_date(timestamp: str) -> str:
     dt = datetime.fromisoformat(timestamp)
     return dt.date().isoformat()
@@ -140,5 +142,19 @@ def closest_radec(ra_array, dec_array, target_ra_deg, target_dec_deg):
 
 
 
-def get_df_order():
-    return ["name", "frequency", "bandwidth", "declination", "right_ascension", "begin", "end", "url"]
+
+def sat_proximity(sat: Satellite, obs_start, obs_end, target_ra, target_dec, npoints=1000):
+
+    eo = sat.to_rhodesmill()
+
+    sat_timestamps = linspace_sky_times(obs_start, obs_end, npoints)
+    geocentric = eo.at(sat_timestamps)
+    right_ascensions, declinations, _ = geocentric.radec()
+
+    # print("\nSAT RAs:", right_ascensions.degrees)
+    # print("SAT DECs:", declinations.degrees)
+
+    idx, ra, dec, ang_dist = closest_radec(right_ascensions.degrees, declinations.degrees, target_ra, target_dec)
+    timestamp = sat_timestamps[idx].utc_datetime()
+
+    return timestamp, ra, dec, ang_dist

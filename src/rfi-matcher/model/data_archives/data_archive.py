@@ -7,7 +7,7 @@ import pandas as pd
 from ..filter_builder import RaFilter
 
 class DataArchive(ABC):
-    required_attributes = ["name", "latitude", "longitude"]
+    required_attributes = ["name", "latitude", "longitude", "elevation"]
 
     def __init_subclass__(cls):
         super().__init_subclass__()
@@ -23,6 +23,9 @@ class DataArchive(ABC):
     def get_observations(self, num: int) -> pd.DataFrame:
         pass 
 
+
+    def get_df_order(self):
+        return ["name", "observation_id", "frequency", "bandwidth", "declination", "right_ascension", "begin", "end", "url"]
 
 
     def get_html(self, url):

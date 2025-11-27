@@ -5,6 +5,7 @@ class NraoDataArchive(DataArchive):
     name = "NRAO"
     latitude = 34.083
     longitude = -107.617
+    elevation =	2124
 
     def __init__(self):
         START = 0

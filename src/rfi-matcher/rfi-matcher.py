@@ -25,8 +25,8 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
             # .set_latitude([-40, 40])
             # .set_longitude([100, 110])
             # .set_frequencies([241000, 275000])
-            .set_start_time("2024-05-01T08:49:54.0")
-            .set_end_time("2024-06-01T10:32:48.0")
+            .set_start_time("2025-06-01T08:49:54.0")
+            .set_end_time("2025-07-01T10:32:48.0")
     )
 
     observatories = ra_filter.get_observatories()
@@ -44,7 +44,9 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
             MyTleFetcherSpacetrack(satellites_filepath, begin, end).fetch_tles()
 
 
-    # Iterate over filtered observatories
+    # =========================================
+    # SCRAPING DATA FROM SELECTED OBSERVATORIES
+    # =========================================
     observations = []
     for name in observatories:
         # Fetch the observatory's respective data archive class (given it exists)
@@ -58,32 +60,31 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
         print(f"Processing {archive.name} with {archive.__class__.__name__}")
 
         # Fetch the desired observations
-        obs_df = archive.get_observations()
+        obs_df = archive.get_observations(num=25)
         observations.append(obs_df)
 
         # Delete the data archive object to free memory
         del archive
 
     total_obs = pd.concat(observations, ignore_index=True)
-    print("Collected observations:", total_obs)
+    print("Collected observations:\n", total_obs)
 
-    # total_obs = sopp_iface.extend_with_rfi(total_obs)
-    # print("Observations with corresponding satellite RFI sources:\n", total_obs)
 
-    total_obs["NORAD"] = None
-    for i, obs in total_obs.iterrows():
-        if(i == 1): 
-            print('\nprocessing row', i)
-            rfi = sopp_iface.get_rfi_sources(obs)
-            # print(rfi)
-            print(sopp_iface.get_rfi_names(rfi))
-            total_obs.at[i, "NORAD"] = rfi
+    # ================================
+    # EXTRACTING RFI SOURCES WITH SOPP
+    # ================================
 
+    total_obs = sopp_iface.extend_with_rfi(total_obs, log=True)
     print("Observations with corresponding satellite RFI sources:\n", total_obs)
 
-    # For each observation's potential satellite RFI 
-    # => find the position and timestamp where satellite is closest to observation target
+
+    # ==========================================
+    # RFI SATELLITE CLOSEST PROXIMITY ESTIMATION
+    # ==========================================
+
     for i, obs in total_obs.iterrows():
+        # For each observation's potential satellite RFI 
+        # => find the position and timestamp where satellite is closest to observation target
 
         obs_start = obs["begin"]
         obs_end = obs["end"]
@@ -91,35 +92,33 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
         target_ra = utils.ra_str_to_deg(obs["right_ascension"])
         target_dec = utils.dec_str_to_deg(obs["declination"])
 
-        # print("\n=====================")
-        # print('\nTarget RA:', target_ra)
-        # print('Target DEC:', target_dec)
+        rfi_sat = []
         if obs["NORAD"]:
             for sat in obs["NORAD"]:
-
+                timestamp, ra, dec, ang_dist = utils.sat_proximity(sat, obs_start, obs_end, target_ra, target_dec)
                 print("\n=====================")
-                print('\nObservation begin:', obs_start)
-                print('Observation end:', obs_end)
-
-                print('\nTarget RA:', target_ra)
-                print('Target DEC:', target_dec)
-
-                eo = sat.to_rhodesmill()
-        
-                sat_timestamps = utils.linspace_sky_times(obs_start, obs_end, npoints=1000)
-                geocentric = eo.at(sat_timestamps)
-                right_ascensions, declinations, _ = geocentric.radec()
-
-                # print("\nSAT RAs:", right_ascensions.degrees)
-                # print("SAT DECs:", declinations.degrees)
-
-                idx, ra, dec, ang_dist = utils.closest_radec(right_ascensions.degrees, declinations.degrees, target_ra, target_dec)
-                print(f"\n--- {sat.name} ---")
-                # print('idx:', idx)
-                print('timestamp:', sat_timestamps[idx].utc_datetime())
+                print(f"\nObservation | start = {obs_start}, end = {obs_end}")
+                print(f"Target | RA = {target_ra}, DEC = {target_dec}")
+                      
+                print(f"\n--- {sat.name} closest proximity ---")
+                print('timestamp:', timestamp)
                 print('ra:', ra)
                 print('dec:', dec)
                 print('ang_dist:', ang_dist)
+
+                rfi_sat.append({
+                    "sat": sat.name,
+                    "timestamp": timestamp.isoformat(),
+                    "declination": float(dec),
+                    "right_ascension": float(ra),
+                    "angular_distance": float(ang_dist)
+                })
+            
+            total_obs.at[i, "NORAD"] = rfi_sat
+
+
+    # print(total_obs["NORAD"])
+    total_obs.to_csv('/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/rfi_data.csv')
 
 
     # ---- KATDAL TEST ----
@@ -141,7 +140,9 @@ if __name__ == "__main__":
     try:
         main(satellites_filepath=satellites_filepath)
     finally:
-        satellites_filepath.unlink(missing_ok=True)
+        #satellites_filepath.unlink(missing_ok=True)
+        pass
+        
 
-    # main()
+    #main()
         
