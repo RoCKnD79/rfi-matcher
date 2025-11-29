@@ -54,7 +54,7 @@ class MeerkatDataArchive(DataArchive):
         observations = asyncio.run(
             meerkat_api.data(
                 auth_address="https://archive.sarao.ac.za",
-                fields="*",
+                fields=fields,
                 exclude_fields="products,FileSize",
                 search="*",
                 limit=num,

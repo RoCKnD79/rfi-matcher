@@ -142,7 +142,6 @@ if __name__ == "__main__":
     finally:
         #satellites_filepath.unlink(missing_ok=True)
         pass
-        
 
     #main()
         
