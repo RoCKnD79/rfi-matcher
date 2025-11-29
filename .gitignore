@@ -1,11 +1,13 @@
 __pycache__/*
 tests/__pycache__/*
+
 src/rfi-matcher/model/__pycache__/*
 src/rfi-matcher/model/data_archives/__pycache__/*
 src/rfi-matcher/custom/__pycache__/*
 src/rfi-matcher/de421.bsp
 
-data/satellites.tle
+src/rfi-matcher/data/satellites.tle
+src/rfi-matcher/data/rfi_data.csv
 
 tokens.json
 
