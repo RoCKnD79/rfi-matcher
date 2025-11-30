@@ -1,0 +1,26 @@
+{
+    "facility": {
+      "beamwidth": 3,
+      "elevation": 986,
+      "latitude": 40.8178049,
+      "longitude": -121.4695413,
+      "name": "HCRO"
+    },
+    "frequencyRange": {
+      "bandwidth": 2000,
+      "frequency": 11700
+    },
+    "observationTarget": {
+      "declination": "7d24m25.426s",
+      "rightAscension": "5h55m10.3s"
+    },
+    "reservationWindow": {
+      "startTimeUtc": "2025-10-13T08:48:54.0",
+      "endTimeUtc": "2025-10-13T08:49:54.0"
+    },
+    "runtimeSettings": {
+        "concurrency_level": 4,
+        "time_continuity_resolution": 1,
+        "min_altitude": 5.0
+    }
+  }

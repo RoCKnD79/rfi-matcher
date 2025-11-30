@@ -26,19 +26,12 @@ dependencies = [
 [project.optional-dependencies]
 ipy = ["ipython", "ipykernel"]
 test = ["pytest"]
-docs = ["sphinx", "sphinx-rtd-theme"]
 
 [project.urls]
 Repository = "https://github.com/RoCKnD79/rfi-matcher.git"
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 
 [tool.setuptools]
 include-package-data = true
-
-[tool.setuptools.package-data]
-tabsim = ["data/**/*"]
-
-[project.scripts]
-# tle-region = "[directory]:main"

@@ -1,0 +1,14 @@
+sopp
+scipy
+matplotlib
+astropy
+spacetrack
+skyfield
+numpy
+
+[ipy]
+ipython
+ipykernel
+
+[test]
+pytest
