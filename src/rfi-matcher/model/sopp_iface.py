@@ -48,7 +48,7 @@ def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
         )
         # Alternatively set all of the above settings from a config file
         #.set_from_config_file(config_file='./supplements/config.json')
-        .set_satellites(tle_file='/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellites.tle', frequency_file='/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellite_frequencies.csv')
+        .set_satellites(tle_file='data/satellites.tle', frequency_file='data/satellite_frequencies.csv')
         .build()
     )
 
@@ -79,7 +79,7 @@ def extend_with_rfi(observations: pd.DataFrame, log=False):
     total_obs["NORAD"] = None
 
     for i, obs in total_obs.iterrows():
-        if(i > 1): break
+        if(i > 3): break
 
         if log:
             begin = obs['begin']

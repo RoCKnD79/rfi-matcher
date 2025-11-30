@@ -8,7 +8,7 @@ class RaFilter:
     def __init__(self):
 
         try:
-            self.ra_csv_df = pd.read_csv("../../data/ITU_RA_Observatories.csv")
+            self.ra_csv_df = pd.read_csv("data/ITU_RA_Observatories.csv")
 
             # remove prefix spaces from column names
             self.ra_csv_df.columns = self.ra_csv_df.columns.str.strip()

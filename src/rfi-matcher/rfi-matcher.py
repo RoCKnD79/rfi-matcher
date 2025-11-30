@@ -118,7 +118,7 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
 
 
     # print(total_obs["NORAD"])
-    total_obs.to_csv('/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/rfi_data.csv')
+    total_obs.to_csv('data/rfi_data.csv')
 
 
     # ---- KATDAL TEST ----
@@ -135,7 +135,7 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
 
 if __name__ == "__main__":
 
-    satellites_filepath = Path('/home/rocknd79/EPFL/MA5/SKACH/rfi-matcher/data/satellites.tle')    
+    satellites_filepath = Path('data/satellites.tle')    
 
     try:
         main(satellites_filepath=satellites_filepath)
