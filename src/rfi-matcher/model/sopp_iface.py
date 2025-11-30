@@ -10,8 +10,8 @@ from model.archive_dictionary import *
 
 def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
     '''
-    scope = 0 (satellites crossing mainbeam)
-    scope = 1 (all satellites above horizon)
+    mainbeam = True (satellites crossing mainbeam)
+    mainbeam = False (all satellites above horizon)
     '''
 
     name = df_obs['name']
@@ -79,7 +79,7 @@ def extend_with_rfi(observations: pd.DataFrame, log=False):
     total_obs["NORAD"] = None
 
     for i, obs in total_obs.iterrows():
-        if(i > 3): break
+        #if(i > 3): break
 
         if log:
             begin = obs['begin']
