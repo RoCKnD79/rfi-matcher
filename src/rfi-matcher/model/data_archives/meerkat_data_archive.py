@@ -6,7 +6,6 @@ import asyncio
 from astropy.coordinates import Angle
 import astropy.units as u
 
-from .. import utils
 from . import meerkat_api
 
 from .data_archive import DataArchive
@@ -24,6 +23,10 @@ class MeerkatDataArchive(DataArchive):
         
 
     def get_observations(self, num=1):
+        '''
+        Return 'num' number of MeerKAT observations
+        based on self.ra_filter's filtering parameters
+        '''
         observations = self.get_raw_observations(num)
         final_obs = self.__format_to_sopp(observations)
         return final_obs
@@ -66,8 +69,6 @@ class MeerkatDataArchive(DataArchive):
                 product_type=None,
             )
         )
-
-        # print('\n\n\nOBSERVATIONS', observations)
 
         return pd.DataFrame(observations)
 

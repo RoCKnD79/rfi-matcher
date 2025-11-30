@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timezone
 
+
 class RaFilter:
 
     def __init__(self):
@@ -105,8 +106,10 @@ class RaFilter:
 
         return self
 
-    def filter_observatories(self):
-
+    def filter_observatories(self) -> pd.DataFrame:
+        '''
+        Filter out 
+        '''
         df = self.ra_csv_df
 
         # If specific observatories have been selected => return them
@@ -136,19 +139,21 @@ class RaFilter:
         # Combine filters
         self.filtered_df = df[location_filter & frequency_filter]
 
+        self.set_observatories(self.filtered_df['stn_name'].dropna().drop_duplicates().tolist())
+
         return self.filtered_df
 
 
 
-    def get_observatories(self):
+    def get_observatories(self) -> list[str]:
         # extract the names of observatories meeting the filter parameters
-        if self.filtered_df == None:
+        if not self.observatories:
             self.filter_observatories()
 
-        return self.filtered_df['stn_name'].dropna().drop_duplicates().tolist()
+        return self.observatories
 
 
-    def get_observatory_info(self, name):
+    def get_observatory_info(self, name: str) -> pd.DataFrame:
         df = self.filtered_df
         return df[df['name'] == name]
 

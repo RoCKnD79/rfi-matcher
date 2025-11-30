@@ -4,14 +4,23 @@ from pathlib import Path
 from sopp.sopp import Sopp
 from sopp.custom_dataclasses.satellite.satellite import Satellite
 from sopp.builder.configuration_builder import ConfigurationBuilder
-from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
 
 from model.archive_dictionary import *
 
 def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
     '''
-    mainbeam = True (satellites crossing mainbeam)
-    mainbeam = False (all satellites above horizon)
+    Parameters
+    ----------
+    df_obs: pandas.DataFrame
+        - must contain column 'name' with observatory name
+
+    mainbeam: bool 
+        - True (satellites crossing mainbeam)
+        - False (all satellites above horizon)
+
+    Returns
+    -------
+    List of potential satellites causing RFI
     '''
 
     name = df_obs['name']
@@ -67,6 +76,9 @@ def get_rfi_sources(df_obs: pd.DataFrame, mainbeam=True) -> list[Satellite]:
 
 
 def get_rfi_names(satellites: list[Satellite]) -> list[str]:
+    '''
+    Returns the names of the satellites in a list of SOPP Satellites.
+    '''
     names = []
     for sat in satellites:
         names.append(sat.name)
@@ -74,7 +86,10 @@ def get_rfi_names(satellites: list[Satellite]) -> list[str]:
     return names
 
 
-def extend_with_rfi(observations: pd.DataFrame, log=False):
+def extend_df_with_rfi(observations: pd.DataFrame, log=False):
+    '''
+    Extend DataFrame of observations with their corresponding list of potential RFI satellites.
+    '''
     total_obs = observations.copy()
     total_obs["NORAD"] = None
 
@@ -86,9 +101,11 @@ def extend_with_rfi(observations: pd.DataFrame, log=False):
             end = obs['end']
             print(f"\nprocessing row: {i} | begin: {begin}, end: {end}")
         
-        rfi = get_rfi_sources(obs)
+            rfi = get_rfi_sources(obs)
+            print(get_rfi_names(rfi))
+        else:
+            rfi = get_rfi_sources(obs)
+            
         total_obs.at[i, "NORAD"] = rfi
-
-        print(get_rfi_names(rfi))
 
     return total_obs

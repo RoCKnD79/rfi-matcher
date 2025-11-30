@@ -7,39 +7,7 @@ from skyfield.units import Angle
 
 from sopp.custom_dataclasses.satellite.satellite import Satellite
 
-def iso_extract_date(timestamp: str) -> str:
-    dt = datetime.fromisoformat(timestamp)
-    return dt.date().isoformat()
-
-def iso_to_datetime(iso_string: str):
-    return datetime.fromisoformat(iso_string).replace(tzinfo=pytz.UTC)
-
-def get_julian_datetime(date):
-    """
-    Convert a datetime object into julian float.
-    Args:
-        date: datetime-object of date in question
-
-    Returns: float - Julian calculated datetime.
-    Raises: 
-        TypeError : Incorrect parameter type
-        ValueError: Date out of range of equation
-    """
-
-    # Ensure correct format
-    if not isinstance(date, datetime.datetime):
-        raise TypeError('Invalid type for parameter "date" - expecting datetime')
-    elif date.year < 1801 or date.year > 2099:
-        raise ValueError('Datetime must be between year 1801 and 2099')
-
-    # Perform the calculation
-    julian_datetime = 367 * date.year - int((7 * (date.year + int((date.month + 9) / 12.0))) / 4.0) + int(
-        (275 * date.month) / 9.0) + date.day + 1721013.5 + (
-                          date.hour + date.minute / 60.0 + date.second / math.pow(60,
-                                                                                  2)) / 24.0 - 0.5 * math.copysign(
-        1, 100 * date.year + date.month - 190002.5) + 0.5
-
-    return julian_datetime
+from . import time_utils
 
 
 def linspace_sky_times(start_iso: str, end_iso: str, npoints=10):
@@ -49,8 +17,8 @@ def linspace_sky_times(start_iso: str, end_iso: str, npoints=10):
     """
     ts = load.timescale()
 
-    dt_start = iso_to_datetime(start_iso)
-    dt_end   = iso_to_datetime(end_iso)
+    dt_start = time_utils.iso_to_datetime(start_iso)
+    dt_end   = time_utils.iso_to_datetime(end_iso)
 
     # Generate list of evenly spaced datetimes
     times = [dt_start + i * (dt_end - dt_start) / (npoints - 1) for i in range(npoints)]
@@ -59,7 +27,7 @@ def linspace_sky_times(start_iso: str, end_iso: str, npoints=10):
     return sky_times
  
 
-def ra_str_to_deg(ra_str):
+def ra_str_to_deg(ra_str: str):
     """
     Convert RA string in format '[-]HhMmSs' to decimal degrees.
     Example: '-4h20m35.0s' -> -65.1458333 degrees
@@ -83,7 +51,7 @@ def ra_str_to_deg(ra_str):
     return sign * degrees
 
 
-def dec_str_to_deg(dec_str):
+def dec_str_to_deg(dec_str: str):
     """
     Convert Dec string in format '[-]DdMmSs' to decimal degrees.
     Example: '-63d42m45.601s' -> -63.712667 degrees
@@ -141,9 +109,30 @@ def closest_radec(ra_array, dec_array, target_ra_deg, target_dec_deg):
     return idx, ra_array[idx], dec_array[idx], angular_distance_deg[idx]
 
 
+def sat_proximity(sat: Satellite, obs_start: str, obs_end: str, target_ra: float, target_dec: float, npoints=1000):
+    '''
+    Find a satellite's closest position to observation target.
 
+    Parameters
+    ----------
+    sat: sopp Satellite
+        - RFI satellite
+    obs_start: str
+        - ISO observation start time
+    obs_end: str
+        - ISO observation end time
+    target_ra: float
+        - target right ascension [deg] (0° to 360°)
+    target_dec: float
+        - target declination [deg] (-90° to 90°)
+    npoints: int
+        - number of points to estimate satellite trajectory for
 
-def sat_proximity(sat: Satellite, obs_start, obs_end, target_ra, target_dec, npoints=1000):
+    Returns
+    -------
+    The timestamp, right ascension, declination and angular distance 
+    at which satellite is closest to observed target
+    '''
 
     eo = sat.to_rhodesmill()
 
