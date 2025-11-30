@@ -9,7 +9,7 @@ import astropy.units as u
 from . import meerkat_api
 
 from .data_archive import DataArchive
-from ..filter_builder import RaFilter
+from ..rfi_filter import RaFilter
 
 class MeerkatDataArchive(DataArchive):
 

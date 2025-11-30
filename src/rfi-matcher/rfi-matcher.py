@@ -10,7 +10,7 @@ from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
 from custom.my_tle_fetcher_spacetrack import MyTleFetcherSpacetrack
 from sopp.tle_fetcher.tle_fetcher_spacetrack import TleFetcherSpacetrack
 
-from model.filter_builder import RaFilter
+from model.rfi_filter import RaFilter
 from model import sopp_utils, skyfield_utils, time_utils
 from model.archive_dictionary import ARCHIVE_CLASSES
 

@@ -4,7 +4,7 @@ from urllib.request import urlopen
 import json
 import pandas as pd
 
-from ..filter_builder import RaFilter
+from ..rfi_filter import RaFilter
 
 class DataArchive(ABC):
     required_attributes = ["name", "latitude", "longitude", "elevation"]
@@ -18,6 +18,10 @@ class DataArchive(ABC):
                 raise TypeError(
                     f"Subclass '{cls.__name__}' must define attribute '{attr}'"
                 )
+            
+    @abstractmethod
+    def __init__(self, ra_filter: RaFilter):
+        pass
 
     @abstractmethod
     def get_observations(self, num: int) -> pd.DataFrame:
