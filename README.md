@@ -23,3 +23,12 @@ The resulting file contains the following columns:
 - **end**: observation end ISO time
 - **url**: link to data of observation
 - **NORAD**: list of RFI satellites per observation and their closest proximity timestamp, coordinates and angular distance
+
+
+## How to run
+
+In terminal:
+1. Create a virtual python environment at directory root level: `python3 -m venv venv` 
+2. Activate the venv `. venv/bin/activate` and install all required dependencies `pip install -r requirements.txt`
+3. Enter directory *rfi-matcher/src/rfi-matcher* by running `cd rfi-matcher/src/rfi-matcher` in terminal 
+4. Run `python3 rfi-matcher.py`
