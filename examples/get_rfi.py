@@ -9,37 +9,14 @@ from sopp.custom_dataclasses.satellite.satellite import Satellite
 
 from rfi_matcher.custom.my_tle_fetcher_spacetrack import MyTleFetcherSpacetrack
 
+import matplotlib.pyplot as plt
+
 from rfi_matcher.model.rfi_filter import RaFilter
-from rfi_matcher.utils import sopp_utils, skyfield_utils, time_utils
-from rfi_matcher.model.archive_dictionary import ARCHIVE_CLASSES
+from rfi_matcher.rfi_matcher import RfiMatcher
+from rfi_matcher.utils import sopp_utils, time_utils, skyfield_utils
 
 
-def get_all_observations(ra_filter: RaFilter, observatories: list[str]):
-    observations = []
-
-    for name in observatories:
-        # Fetch the observatory's respective data archive class (given it exists)
-        cls = ARCHIVE_CLASSES.get(name)
-        if cls is None:
-            print(f"Warning: No class defined for {name}")
-            continue
-
-        # Instantiate the corresponding data archive object
-        archive = cls(ra_filter)
-        print(f"Processing {archive.name} with {archive.__class__.__name__}")
-
-        # Fetch the desired observations
-        obs_df = archive.get_observations(num=25)
-        observations.append(obs_df)
-
-        # Delete the data archive object to free memory
-        del archive
-
-    return observations
-
-
-
-def main(fetch_tles=True, satellites_filepath=Path('')):
+def main(satellites_filepath=Path('')):
 
     ra_filter = (
         RaFilter()
@@ -49,94 +26,29 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
             # .set_latitude([-40, 40])
             # .set_longitude([100, 110])
             # .set_frequencies([241000, 275000])
-            .set_start_time("2025-06-01T08:49:54.0")
-            .set_end_time("2025-07-01T10:32:48.0")
+            .set_start_time("2024-06-27T08:49:54.0")
+            .set_end_time("2024-06-29T10:32:48.0")
     )
 
-    observatories = ra_filter.get_observatories()
-    print(observatories)
+    matcher = RfiMatcher(ra_filter)
+    matcher.fetch_tles(satellites_filepath)
 
-
-    if fetch_tles:
-        begin = time_utils.iso_extract_date(ra_filter.startTimeUTC)
-        end = time_utils.iso_extract_date(ra_filter.endTimeUTC)
-        print(begin)
-        print(end)
-        if not satellites_filepath.exists():
-            print("Fetching satellite TLEs:", satellites_filepath)
-            MyTleFetcherSpacetrack(satellites_filepath, begin, end).fetch_tles()
-
-
-
-    # =========================================
     # SCRAPING DATA FROM SELECTED OBSERVATORIES
-    # =========================================
-    observations = get_all_observations(ra_filter, observatories)
-
-    total_obs = pd.concat(observations, ignore_index=True)
-    print("Collected observations:\n", total_obs)
+    observatories = ra_filter.get_observatories()
+    observations = matcher.get_all_observations(observatories)
+    print("Collected observations:\n", observations)
 
 
-    # ================================
     # EXTRACTING RFI SOURCES WITH SOPP
-    # ================================
-
-    total_obs = sopp_utils.extend_df_with_rfi(total_obs, log=True)
-    print("Observations with corresponding satellite RFI sources:\n", total_obs)
+    observations_rfi = matcher.extend_observations_with_rfi(observations, lim=10, log=True)
+    print("Observations with corresponding satellite RFI sources:\n", observations_rfi)
 
 
-    # ==========================================
     # RFI SATELLITE CLOSEST PROXIMITY ESTIMATION
-    # ==========================================
+    observations_satprox = matcher.get_all_sat_proximities(observations_rfi)
 
-    for i, obs in total_obs.iterrows():
-        # For each observation's potential satellite RFI 
-        # => find the position and timestamp where satellite is closest to observation target
-
-        obs_start = obs["begin"]
-        obs_end = obs["end"]
-
-        target_ra = skyfield_utils.ra_str_to_deg(obs["right_ascension"])
-        target_dec = skyfield_utils.dec_str_to_deg(obs["declination"])
-
-        rfi_sat = []
-        if obs["NORAD"]:
-            for sat in obs["NORAD"]:
-                timestamp, ra, dec, ang_dist = skyfield_utils.sat_proximity(sat, obs_start, obs_end, target_ra, target_dec)
-                print("\n=====================")
-                print(f"\nObservation | start = {obs_start}, end = {obs_end}")
-                print(f"Target | RA = {target_ra}, DEC = {target_dec}")
-                      
-                print(f"\n--- {sat.name} closest proximity ---")
-                print('timestamp:', timestamp)
-                print('ra:', ra)
-                print('dec:', dec)
-                print('ang_dist:', ang_dist)
-
-                rfi_sat.append({
-                    "sat": sat.name,
-                    "timestamp": timestamp.isoformat(),
-                    "declination": float(dec),
-                    "right_ascension": float(ra),
-                    "angular_distance": float(ang_dist)
-                })
-            
-            total_obs.at[i, "NORAD"] = rfi_sat
-
-
-    total_obs.to_csv('data/rfi_data.csv')
-
-
-    # ---- KATDAL TEST ----
-    # print(total_obs.iloc[0]["url"])
-    # d = katdal.open(total_obs.iloc[0]["url"])
-    # d.select(scans='track', channels=slice(200, 300), ants='m000')
-    # print(d)
-
-    # plt.plot(d.az, d.el, 'o')
-    # plt.xlabel('Azimuth (degrees)')
-    # plt.ylabel('Elevation (degrees)')
-    # plt.show()
+    # SAVE DATA IN A CSV FILE
+    observations_satprox.to_csv('data/rfi_data.csv')
 
 
 if __name__ == "__main__":
