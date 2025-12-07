@@ -2,6 +2,8 @@ __pycache__/*
 tests/__pycache__/*
 build/
 
+examples/de421.bsp
+
 src/rfi-matcher/model/__pycache__/*
 src/rfi-matcher/model/data_archives/__pycache__/*
 src/rfi-matcher/custom/__pycache__/*
