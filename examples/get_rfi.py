@@ -6,13 +6,12 @@ from skyfield.api import EarthSatellite
 from skyfield.timelib import Time
 
 from sopp.custom_dataclasses.satellite.satellite import Satellite
-from sopp.tle_fetcher.tle_fetcher_celestrak import TleFetcherCelestrak
-from custom.my_tle_fetcher_spacetrack import MyTleFetcherSpacetrack
-from sopp.tle_fetcher.tle_fetcher_spacetrack import TleFetcherSpacetrack
 
-from model.rfi_filter import RaFilter
-from model import sopp_utils, skyfield_utils, time_utils
-from model.archive_dictionary import ARCHIVE_CLASSES
+from rfi_matcher.custom.my_tle_fetcher_spacetrack import MyTleFetcherSpacetrack
+
+from rfi_matcher.model.rfi_filter import RaFilter
+from rfi_matcher.utils import sopp_utils, skyfield_utils, time_utils
+from rfi_matcher.model.archive_dictionary import ARCHIVE_CLASSES
 
 
 def get_all_observations(ra_filter: RaFilter, observatories: list[str]):
@@ -65,8 +64,8 @@ def main(fetch_tles=True, satellites_filepath=Path('')):
         print(end)
         if not satellites_filepath.exists():
             print("Fetching satellite TLEs:", satellites_filepath)
-            # TleFetcherCelestrak(satellites_filepath).fetch_tles()
             MyTleFetcherSpacetrack(satellites_filepath, begin, end).fetch_tles()
+
 
 
     # =========================================

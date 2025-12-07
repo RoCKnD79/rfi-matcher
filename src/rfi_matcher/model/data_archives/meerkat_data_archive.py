@@ -6,11 +6,10 @@ import asyncio
 from astropy.coordinates import Angle
 import astropy.units as u
 
-from .. import utils
 from . import meerkat_api
 
 from .data_archive import DataArchive
-from ..filter_builder import RaFilter
+from ..rfi_filter import RaFilter
 
 class MeerkatDataArchive(DataArchive):
 
@@ -45,7 +44,7 @@ class MeerkatDataArchive(DataArchive):
         end_date = dt_end.date()
 
         filters = [f"Band={bands}", f"from={start_date}", f"to={end_date}"]
-        print('\n\nfilters:', filters, '\n\n')
+        print('filters:', filters)
 
 
         # TODO understand why if fields="*" => product_type can't be None
@@ -188,25 +187,28 @@ class MeerkatDataArchive(DataArchive):
             track   = int(m.group("track"))
             target_id = m.group("target_id")
 
-            print(target_id)
-
             # Convert to full ISO timestamps
             start_iso = datetime.combine(date_obj, datetime.strptime(start_t, "%H:%M:%S").time()).isoformat()
             end_iso   = datetime.combine(date_obj, datetime.strptime(end_t, "%H:%M:%S").time()).isoformat()
 
             # Get dec/ra strings from mapping → split
-            dec_str, ra_str = target_decra[target_id].split(",")
-            dec = float(dec_str)
-            ra = float(ra_str)
+            try: 
+                dec_str, ra_str = target_decra[target_id].split(",")
+                dec = float(dec_str)
+                ra = float(ra_str)
 
-            results.append({
-                "track": track,
-                "target_id": target_id,
-                "declination": dec,
-                "right_ascension": ra,
-                "begin": start_iso,
-                "end": end_iso,
-            })
+                results.append({
+                    "track": track,
+                    "target_id": target_id,
+                    "declination": dec,
+                    "right_ascension": ra,
+                    "begin": start_iso,
+                    "end": end_iso,
+                })
+
+            except Exception as e:
+                print("Error:", str(e))
+                continue
 
         return results
 

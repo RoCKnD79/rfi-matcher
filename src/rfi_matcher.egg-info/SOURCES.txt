@@ -3,11 +3,13 @@ MANIFEST.in
 README.md
 pyproject.toml
 src/rfi_matcher/__init__.py
+src/rfi_matcher/rfi_matcher.py
 src/rfi_matcher.egg-info/PKG-INFO
 src/rfi_matcher.egg-info/SOURCES.txt
 src/rfi_matcher.egg-info/dependency_links.txt
 src/rfi_matcher.egg-info/requires.txt
 src/rfi_matcher.egg-info/top_level.txt
+src/rfi_matcher/custom/__init__.py
 src/rfi_matcher/custom/my_tle_fetcher_base.py
 src/rfi_matcher/custom/my_tle_fetcher_spacetrack.py
 src/rfi_matcher/custom/__pycache__/my_tle_fetcher_base.cpython-312.pyc
@@ -17,10 +19,9 @@ src/rfi_matcher/data/reference_config.json
 src/rfi_matcher/data/rfi_data.csv
 src/rfi_matcher/data/satellite_frequencies.csv
 src/rfi_matcher/data/satellites.tle
+src/rfi_matcher/model/__init__.py
 src/rfi_matcher/model/archive_dictionary.py
-src/rfi_matcher/model/filter_builder.py
-src/rfi_matcher/model/sopp_iface.py
-src/rfi_matcher/model/utils.py
+src/rfi_matcher/model/rfi_filter.py
 src/rfi_matcher/model/__pycache__/archive_dictionary.cpython-312.pyc
 src/rfi_matcher/model/__pycache__/filter_builder.cpython-312.pyc
 src/rfi_matcher/model/__pycache__/sopp_iface.cpython-312.pyc
@@ -35,4 +36,8 @@ src/rfi_matcher/model/data_archives/__pycache__/data_archive.cpython-312.pyc
 src/rfi_matcher/model/data_archives/__pycache__/meerkat_api.cpython-312.pyc
 src/rfi_matcher/model/data_archives/__pycache__/meerkat_data_archive.cpython-312.pyc
 src/rfi_matcher/model/data_archives/__pycache__/nrao_data_archive.cpython-312.pyc
+src/rfi_matcher/utils/__init__.py
+src/rfi_matcher/utils/skyfield_utils.py
+src/rfi_matcher/utils/sopp_utils.py
+src/rfi_matcher/utils/time_utils.py
 tests/test_filter_builder.py

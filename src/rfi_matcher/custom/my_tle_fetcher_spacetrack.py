@@ -2,15 +2,9 @@ import requests
 import os
 from dotenv import load_dotenv
 
-import pandas as pd
-
-from astropy.time import Time
-from astropy.coordinates import EarthLocation
-
 from spacetrack import SpaceTrackClient
 import spacetrack.operators as op
 
-from rfi_matcher.model import utils
 from .my_tle_fetcher_base import MyTleFetcherBase
 
 load_dotenv()
@@ -51,8 +45,6 @@ class MyTleFetcherSpacetrack(MyTleFetcherBase):
 
         # Send login request
         resp = session.post(login_url, data=payload)
-        print("Login status:", resp.status_code)
-        print("Login resp headers:", resp.headers)
 
         # Try parse JSON body, but guard for 204
         if resp.status_code == 200:

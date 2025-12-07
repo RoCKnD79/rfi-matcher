@@ -4,7 +4,7 @@ from urllib.request import urlopen
 import json
 import pandas as pd
 
-from ..filter_builder import RaFilter
+from ..rfi_filter import RaFilter
 
 class DataArchive(ABC):
     required_attributes = ["name", "latitude", "longitude", "elevation"]
