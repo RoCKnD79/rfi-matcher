@@ -26,7 +26,7 @@ def main(satellites_filepath=Path('')):
             # .set_latitude([-40, 40])
             # .set_longitude([100, 110])
             # .set_frequencies([241000, 275000])
-            .set_start_time("2024-06-27T08:49:54.0")
+            .set_start_time("2024-06-20T08:49:54.0")
             .set_end_time("2024-06-29T10:32:48.0")
     )
 
@@ -53,7 +53,7 @@ def main(satellites_filepath=Path('')):
 
 if __name__ == "__main__":
 
-    satellites_filepath = Path('path/to/examples/data')    
+    satellites_filepath = Path('data/satellites.tle')    
 
     try:
         main(satellites_filepath=satellites_filepath)

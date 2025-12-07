@@ -142,7 +142,7 @@ class RaFilter:
 
 
 
-    def get_observatories(self):
+    def get_observatories(self) -> list[str]:
         # extract the names of observatories meeting the filter parameters
         if self.filtered_df == None:
             self.filter_observatories()
