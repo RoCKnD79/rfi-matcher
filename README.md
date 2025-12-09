@@ -5,12 +5,21 @@ Extract potential sources of RFI in public observations for a given frequency ba
 Run `pip install git+https://github.com/RoCKnD79/rfi-matcher.git` in python environment.
 
 ## Requirements
+### Space-Track
 The package fetches TLE data from [Space-Track.org](https://www.space-track.org). 
 For this to work, please declare **environment variables** `ID_SPACE_TRACK` and `PWD_SPACE_TRACK` on your system in your current terminal instance, by running:
 - `export ID_SPACE_TRACK=<your_space_track_id>`
 - `export PWD_SPACE_TRACK=<your_space_track_password>`
 
 You can also add the two lines in your `~/.bashrc` file for the variables to be declared at **each new terminal instantiation**.
+
+### MeerKAT
+Currently, the package only effectively interacts with the [MeerKAT data archive](https://archive.sarao.ac.za/). 
+When running the code, the user is prompted to follow MeerKAT's authentication process to be granted access to interact with the data archive.
+
+**Procedure**: visit the link provided in terminal --> authenticate --> copy the link on which you are redirected --> input in terminal --> DONE.
+
+This will generate a file with access tokens which will be used by the MeerKAT API to interact with the data archive without needing to authenticate each time.
 
 ## Filtering
 The code allows you to crawl observatory data archives based on the observatories filtered by creating an `ra_filter.RaFilter` object. 
