@@ -1,6 +1,14 @@
 # rfi-matcher
 Extract potential sources of RFI in public observations for a given frequency band, time duration and beam interval.
 
+## Prerequisites
+The package fetches TLE data from [Space-Track.org](https://www.space-track.org). 
+For this to work, please declare **environment variables** `ID_SPACE_TRACK` and `PWD_SPACE_TRACK` on your system in your current terminal instance, by running:
+- `export ID_SPACE_TRACK=<your_space_track_id>`
+- `export PWD_SPACE_TRACK=<your_space_track_password>`
+
+You can also add the two lines in your `~/.bashrc` file for the variables to be declared at **each new terminal instantiation**.
+
 ## Filtering
 The code allows you to crawl observatory data archives based on the observatories filtered by creating an `ra_filter.RaFilter` object. 
 The object allows you to set the following parameters:

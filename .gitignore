@@ -6,7 +6,7 @@ examples/de421.bsp
 examples/data/rfi_data.csv
 examples/data/satellites.tle
 
-src/rfi-matcher/rfi_matcher.egg-info/*
+src/rfi_matcher.egg-info/*
 
 src/rfi_matcher/model/__pycache__/*
 src/rfi_matcher/model/data_archives/__pycache__/*

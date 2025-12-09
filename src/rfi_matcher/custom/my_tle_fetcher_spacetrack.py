@@ -8,8 +8,8 @@ import spacetrack.operators as op
 from .my_tle_fetcher_base import MyTleFetcherBase
 
 load_dotenv()
-IDENTITY = os.getenv("IDENTITY")
-PASSWORD = os.getenv("PASSWORD")
+IDENTITY = os.getenv("ID_SPACE_TRACK")
+PASSWORD = os.getenv("PWD_SPACE_TRACK")
 
 
 class MyTleFetcherSpacetrack(MyTleFetcherBase):
