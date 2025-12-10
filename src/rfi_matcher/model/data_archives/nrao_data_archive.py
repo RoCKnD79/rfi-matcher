@@ -1,5 +1,7 @@
 import pandas as pd
+
 from .data_archive import DataArchive
+from ..rfi_filter import RaFilter
 
 class NraoDataArchive(DataArchive):
     name = "NRAO"
@@ -7,12 +9,15 @@ class NraoDataArchive(DataArchive):
     longitude = -107.617
     elevation =	2124
 
-    def __init__(self):
+    def __init__(self, ra_filter: RaFilter):
+        super().__init__(ra_filter)
+
         START = 0
         NUM_ROWS = 5
 
         self.start = START
         self.num_rows = NUM_ROWS
+
 
     def get_observations(self):
         # NRAO_PORTAL_URL = f"https://data.nrao.edu/archive-service/restapi_get_eb_project_view?start={START}&rows={NUM_ROWS}&sort=proj_stop%20desc"

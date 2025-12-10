@@ -19,7 +19,7 @@ class MeerkatDataArchive(DataArchive):
     elevation = 0
 
     def __init__(self, ra_filter: RaFilter):
-        self.ra_filter = ra_filter
+        super().__init__(ra_filter)
         
 
     def get_observations(self, num=1):

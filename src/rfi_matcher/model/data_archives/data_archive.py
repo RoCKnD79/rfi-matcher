@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import inspect
 
 from urllib.request import urlopen
 import json
@@ -18,9 +19,29 @@ class DataArchive(ABC):
                 raise TypeError(
                     f"Subclass '{cls.__name__}' must define attribute '{attr}'"
                 )
+            # --- Enforce instance-level requirement: ra_filter must be in __init__ ---
+        init_sig = inspect.signature(cls.__init__)
+        if "ra_filter" not in init_sig.parameters:
+            raise TypeError(
+                f"Subclass '{cls.__name__}' must have `ra_filter` as a parameter "
+                "in its __init__ method."
+            )
+
+    def __init__(self, ra_filter: RaFilter):
+        self.ra_filter = ra_filter
 
     @abstractmethod
     def get_observations(self, num: int) -> pd.DataFrame:
+        '''
+        Function collecting the observations within an archive based on the filtering parameters
+        of its RaFilter attribute. The observations must contain the columns as defined in get_df_order()
+        in order to work with SOPP's interface.
+        
+        :param num: Number of requested observations.
+        :type num: int
+        :return: The collected observations' parameters with columns as returned by get_df_order()
+        :rtype: DataFrame
+        '''
         pass 
 
 
