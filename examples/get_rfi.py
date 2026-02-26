@@ -26,8 +26,8 @@ def main(satellites_filepath=Path('')):
             # .set_latitude([-40, 40])
             # .set_longitude([100, 110])
             # .set_frequencies([241000, 275000])
-            .set_start_time("2024-06-20T08:49:54.0")
-            .set_end_time("2024-06-29T10:32:48.0")
+            .set_start_time("2025-06-01T08:49:54.0")
+            .set_end_time("2025-09-01T23:32:48.0")
     )
 
     matcher = RfiMatcher(ra_filter)
@@ -40,7 +40,7 @@ def main(satellites_filepath=Path('')):
 
 
     # EXTRACTING RFI SOURCES WITH SOPP
-    observations_rfi = matcher.extend_observations_with_rfi(observations, lim=10, log=True)
+    observations_rfi = matcher.extend_observations_with_rfi(observations, lim=None, log=True)
     print("Observations with corresponding satellite RFI sources:\n", observations_rfi)
 
 
