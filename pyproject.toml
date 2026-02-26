@@ -22,7 +22,7 @@ dependencies = [
     "sopp", "scipy", "matplotlib", 
     "astropy", "spacetrack", "skyfield", "numpy", 
     "pandas", "aiohttp", "katdal", "gql", 
-    "matplotlib",
+    "matplotlib", "pytz",
 ]
 
 [project.optional-dependencies]
